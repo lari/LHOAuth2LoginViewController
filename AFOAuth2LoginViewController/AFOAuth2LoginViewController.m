@@ -67,34 +67,10 @@
 	return self;
 }
 
-- (void)configureWithBaseURL:(NSString *)baseURL
-          authenticationPath:(NSString *)authPath
-            verificationPath:(NSString *)verifyPath
-                    clientID:(NSString *)clientID
-                      secret:(NSString *)secret
-                       scope:(NSString *)scope
-                 redirectURL:(NSString *)redirectURL
-                    delegate:(id<AFOAuth2LoginViewControllerDelegate>)delegate {
-    
-    self.baseURL = baseURL;
-    self.redirect = redirectURL;
-    self.clientID = clientID;
-    self.secret = secret;
-    self.authPath = authPath;
-    self.verifyPath = verifyPath;
-    self.delegate = delegate;
-    self.scope = scope;
-    spinnerActive = NO;
-    
-    self.client = [[AFOAuth2Client alloc] initWithBaseURL:[NSURL URLWithString:baseURL] clientID:clientID secret:secret];
-}
-
 - (void)authorize {
     NSString* url = [NSString stringWithFormat:@"%@%@?response_type=token&client_id=%@&redirect_uri=%@&scope=%@",self.baseURL,self.authPath,self.clientID,self.redirect,self.scope];
     [self.webView loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:url]]];
 }
-
-
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {

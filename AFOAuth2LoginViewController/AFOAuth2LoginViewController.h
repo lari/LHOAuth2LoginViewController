@@ -56,27 +56,7 @@
                secret:(NSString *)secret
                 scope:(NSString *)scope
           redirectURL:(NSString *)redirectURL
-             delegate:(id<AFOAuth2ClientViewControllerDelegate>)delegate;
-
-/**
- Configure view controller that's reused or loaded from xib
- 
- @param baseURL     the api's base url (e.g. https://googleapis.com/ )
- @param authPath    path for authorization request
- @param verifyPath  path for access token request
- @param clientID    OAuth2 client id
- @param secret      OAuth2 client secret
- @param scope       Requested scope (e.g. "read" or "read+write")
- @param redirectURL url where the user is redirected after authorization
- */
-- (void)configureWithBaseURL:(NSString *)baseURL
-          authenticationPath:(NSString *)authPath
-            verificationPath:(NSString *)verifyPath
-                    clientID:(NSString *)clientID
-                      secret:(NSString *)secret
-                       scope:(NSString *)scope
-                 redirectURL:(NSString *)redirectURL
-                    delegate:(id<AFOAuth2ClientViewControllerDelegate>)delegate;
+             delegate:(id<AFOAuth2LoginViewControllerDelegate>)delegate;
 
 /*
  * Load the authorization page
