@@ -48,7 +48,7 @@
                secret:(NSString *)secret
                 scope:(NSString *)scope
           redirectURL:(NSString *)redirectURL
-             delegate:(id<AFOAuth2ClientViewControllerDelegate>)delegate {
+             delegate:(id<AFOAuth2LoginViewControllerDelegate>)delegate {
 
     self.baseURL = baseURL;
     self.redirect = redirectURL;
@@ -74,7 +74,7 @@
                       secret:(NSString *)secret
                        scope:(NSString *)scope
                  redirectURL:(NSString *)redirectURL
-                    delegate:(id<AFOAuth2ClientViewControllerDelegate>)delegate {
+                    delegate:(id<AFOAuth2LoginViewControllerDelegate>)delegate {
     
     self.baseURL = baseURL;
     self.redirect = redirectURL;
