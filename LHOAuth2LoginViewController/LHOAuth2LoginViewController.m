@@ -1,4 +1,4 @@
-// AFOAuth1ClientViewController.m
+// LHOAuth2LoginViewController.m
 //
 // Copyright (c) 2013 Lari Haataja (http://larihaataja.fi)
 //
@@ -20,9 +20,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#import "AFOAuth2LoginViewController.h"
+#import "LHOAuth2LoginViewController.h"
 
-@interface AFOAuth2LoginViewController() {
+#import "NSString+LHURLEncoding.h"
+
+@interface LHOAuth2LoginViewController() {
     NSTimer *timer;
     BOOL spinnerActive;
 }
@@ -31,44 +33,50 @@
 @property (nonatomic,strong) NSString* baseURL;
 @property (nonatomic,strong) NSString* redirect;
 @property (nonatomic,strong) NSString* clientID;
-@property (nonatomic,strong) NSString* secret;
 @property (nonatomic,strong) NSString* authPath;
-@property (nonatomic,strong) NSString* verifyPath;
 @property (nonatomic,strong) NSString* scope;
+@property (nonatomic,strong) NSString* state;
 
 @end
 
-@implementation AFOAuth2LoginViewController
+@implementation LHOAuth2LoginViewController
 
 
 - (id)initWithBaseURL:(NSString *)baseURL
    authenticationPath:(NSString *)authPath
-     verificationPath:(NSString *)verifyPath
              clientID:(NSString *)clientID
-               secret:(NSString *)secret
                 scope:(NSString *)scope
           redirectURL:(NSString *)redirectURL
-             delegate:(id<AFOAuth2LoginViewControllerDelegate>)delegate {
+             delegate:(id<LHOAuth2LoginViewControllerDelegate>)delegate {
 
     self.baseURL = baseURL;
-    self.redirect = redirectURL;
-    self.clientID = clientID;
-    self.secret = secret;
     self.authPath = authPath;
-    self.verifyPath = verifyPath;
-    self.delegate = delegate;
+    self.clientID = clientID;
     self.scope = scope;
+    self.redirect = redirectURL;
+    
+    self.delegate = delegate;
+    
     spinnerActive = NO;
     
 	self = [super init];
 	if (self) {
-        self.client = [[AFOAuth2Client alloc] initWithBaseURL:[NSURL URLWithString:baseURL] clientID:clientID secret:secret];
+        
 	}
 	return self;
 }
 
 - (void)authorize {
-    NSString* url = [NSString stringWithFormat:@"%@%@?response_type=token&client_id=%@&redirect_uri=%@&scope=%@",self.baseURL,self.authPath,self.clientID,self.redirect,self.scope];
+    // Generate a random string for state parameter
+    NSString *letters = @"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    NSMutableString *randomString = [NSMutableString stringWithCapacity:8];
+    for (int i=0; i<8; i++) {
+        [randomString appendFormat: @"%C", [letters characterAtIndex: arc4random() % [letters length]]];
+    }
+    self.state = randomString;
+    
+    // Create the url ald load it to the web view
+    NSString* url = [NSString stringWithFormat:@"%@%@?response_type=token&client_id=%@&redirect_uri=%@&scope=%@&state=%@",self.baseURL,self.authPath,self.clientID,[self.redirect urlEncodeUsingEncoding:NSUTF8StringEncoding],self.scope,self.state];
     [self.webView loadRequest:[NSURLRequest requestWithURL:[NSURL URLWithString:url]]];
 }
 
@@ -105,29 +113,6 @@
     // Dispose of any resources that can be recreated.
 }
 
-
-/*
- * Request the access token with the code (use AFOAuth2Client)
- */
-- (void)getAccessTokenForCode:(NSString *)code
-{
-    [self.client authenticateUsingOAuthWithPath:self.verifyPath
-                                           code:code
-                                    redirectURI:self.redirect
-                                        success:^(AFOAuthCredential *credential) {
-                                            [self dismissViewControllerAnimated:YES completion:^() {
-                                                [self.delegate oAuthViewController:self
-                                                          didSucceedWithCredential:credential];
-                                            }];
-                                        }
-                                        failure:^(NSError *error) {
-                                            [self dismissViewControllerAnimated:YES completion:^() {
-                                                [self.delegate oAuthViewController:self
-                                                                  didFailWithError:error];
-                                            }];
-                                        }];
-}
-
 /*
  * On error, send error message to delegate and dismiss view controller
  */
@@ -161,29 +146,50 @@
     if ([[[request URL] absoluteString] rangeOfString:self.redirect].location != NSNotFound
         && [[[request URL] host] isEqualToString:[[NSURL URLWithString:self.redirect] host]]) {
         
+        NSLog(@"loading url: %@", [[request URL] absoluteString]);
+        
+        NSString    *token,
+                    *tokenType,
+                    *errorCode,
+                    *errorMsg,
+                    *refreshToken,
+                    *state;
+        NSDate      *expires;
+        
         // Scan the URL for parameters
-        NSScanner *scanner = [NSScanner scannerWithString:[[request URL] absoluteString]];
-        [scanner setCharactersToBeSkipped:[NSCharacterSet characterSetWithCharactersInString:@"&?"]];
+        NSScanner *scanner;
         NSString *tempKey;
         NSString *tempValue;
-        [scanner scanUpToString:@"?" intoString:nil]; // Skip to the url parameters
         
-        NSString *code, *token, *tokenType, *errorCode, *errorMsg;
+        scanner = [NSScanner scannerWithString:[[request URL] absoluteString]];
+        [scanner setCharactersToBeSkipped:[NSCharacterSet characterSetWithCharactersInString:@"&?#"]];
+        [scanner scanUpToString:@"#" intoString:nil]; // Skip to the url fragment
         
         while ([scanner scanUpToString:@"=" intoString:&tempKey]) {
             [scanner scanUpToString:@"&" intoString:&tempValue];
-            if ([tempKey isEqualToString:@"code"]) {
-                code = [tempValue substringFromIndex:1];
+            if ([tempKey isEqualToString:@"access_token"]) {
+                token = [tempValue substringFromIndex:1];
+            } else if ([tempKey isEqualToString:@"token_type"]) {
+                tokenType = [tempValue substringFromIndex:1];
+            } else if ([tempKey isEqualToString:@"expires_in"]) {
+                expires = [NSDate dateWithTimeIntervalSinceNow:[[tempValue substringFromIndex:1] doubleValue]];
             } else if ([tempKey isEqualToString:@"error"]) {
                 errorCode = [tempValue substringFromIndex:1];
             } else if ([tempKey isEqualToString:@"error_description"]) {
                 errorMsg = [tempValue substringFromIndex:1];
+            } else if ([tempKey isEqualToString:@"state"]) {
+                state = [tempValue substringFromIndex:1];
             }
         }
         
+        if (self.state && ![self.state isEqualToString:state]) {
+            [self failWithErrorCode:100 description:@"Invalid state received from the server." recoverySuggestion:@"Try again later. If the problem continues, please contact support."];
+            return NO;
+        }
+        
         // Check which parameters we got and act based on those
-        if (code) {
-            [self getAccessTokenForCode:code];
+        if (token) {
+            [self credentialWithToken:token ofType:tokenType expires:expires];
         } else if (errorCode) {
             // Add error message if we don't get it from server
             if (!errorMsg) {
@@ -193,11 +199,26 @@
             }
             [self failWithErrorCode:errorCode description:errorMsg recoverySuggestion:@""];
         } else {
-            [self failWithErrorCode:100 description:@"Could not resolve server response (no code or token received)." recoverySuggestion:@"Make sure that you get a code or token from the server."];
+            [self failWithErrorCode:100 description:@"Could not resolve server response (no code or token received)." recoverySuggestion:@"Make sure that you get a token from the server."];
         }
         return NO;
     }
     return YES;
+}
+
+- (void)credentialWithToken:(NSString *)token
+                     ofType:(NSString *)type
+                    expires:(NSDate *)expires {
+    
+    // Create the credential dictionary
+    NSDictionary *credential = @{ @"access_token"   : token,
+                                  @"token_type"     : type,
+                                  @"expires"        : expires };
+    
+    [self dismissViewControllerAnimated:YES completion:^() {
+        [self.delegate oAuthViewController:self didSucceedWithCredential:credential];
+    }];
+    
 }
 
 - (void)webViewDidStartLoad:(UIWebView *)webView {

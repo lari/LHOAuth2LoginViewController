@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Workspace
+   version = "1.0">
+   <Group
+      location = "group:LHOAuth2LoginViewController"
+      name = "LHOAuth2LoginViewController">
+      <FileRef
+         location = "group:LHOAuth2LoginViewController.h">
+      </FileRef>
+      <FileRef
+         location = "group:LHOAuth2LoginViewController.m">
+      </FileRef>
+      <FileRef
+         location = "group:NSString+LHURLEncoding.h">
+      </FileRef>
+      <FileRef
+         location = "group:NSString+LHURLEncoding.m">
+      </FileRef>
+   </Group>
+   <FileRef
+      location = "group:LHOAuth2LoginViewController.podspec">
+   </FileRef>
+   <FileRef
+      location = "group:LHOAuth2LoginViewController.xcworkspace">
+   </FileRef>
+   <FileRef
+      location = "group:LICENSE">
+   </FileRef>
+   <FileRef
+      location = "group:README.md">
+   </FileRef>
+</Workspace>

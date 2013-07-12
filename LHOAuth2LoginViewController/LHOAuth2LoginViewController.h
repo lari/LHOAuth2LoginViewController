@@ -1,4 +1,4 @@
-// AFOAuth1ClientViewController.m
+// LHOAuth2LoginViewController.h
 //
 // Copyright (c) 2013 Lari Haataja (http://larihaataja.fi)
 //
@@ -21,42 +21,36 @@
 // THE SOFTWARE.
 
 #import <UIKit/UIKit.h>
-#import "AFOAuth2Client.h"
 
-@class AFOAuth2LoginViewController;
+@class LHOAuth2LoginViewController;
 
-@protocol AFOAuth2LoginViewControllerDelegate <NSObject>
+@protocol LHOAuth2LoginViewControllerDelegate <NSObject>
 
 @optional
-- (void)oAuthViewController:(AFOAuth2LoginViewController *)viewController didSucceedWithCredential:(AFOAuthCredential *)credential;
-- (void)oAuthViewController:(AFOAuth2LoginViewController *)viewController didFailWithError:(NSError *)error;
+- (void)oAuthViewController:(LHOAuth2LoginViewController *)viewController didSucceedWithCredential:(NSDictionary *)credential;
+- (void)oAuthViewController:(LHOAuth2LoginViewController *)viewController didFailWithError:(NSError *)error;
 
 @end
 
-@interface AFOAuth2LoginViewController : UIViewController <UIWebViewDelegate>
+@interface LHOAuth2LoginViewController : UIViewController <UIWebViewDelegate>
 
-@property (nonatomic,strong) AFOAuth2Client* client;
-@property (nonatomic,assign) id<AFOAuth2LoginViewControllerDelegate> delegate;
+@property (nonatomic,assign) id<LHOAuth2LoginViewControllerDelegate> delegate;
 
 /**
  Init view controller
  
- @param baseURL     the api's base url (e.g. https://googleapis.com/ )
- @param authPath    path for authorization request
- @param verifyPath  path for access token request
- @param clientID    OAuth2 client id
- @param secret      OAuth2 client secret
- @param scope       Requested scope (e.g. "read" or "read+write")
- @param redirectURL url where the user is redirected after authorization
+ @param baseURL         the api's base url (e.g. https://googleapis.com/ )
+ @param authPath        path for authorization request
+ @param clientID        OAuth2 client id
+ @param scope           Requested scope (e.g. "read" or "read+write")
+ @param redirectURL     url where the user is redirected after authorization
 */
 - (id)initWithBaseURL:(NSString *)baseURL
    authenticationPath:(NSString *)authPath
-     verificationPath:(NSString *)verifyPath
              clientID:(NSString *)clientID
-               secret:(NSString *)secret
                 scope:(NSString *)scope
           redirectURL:(NSString *)redirectURL
-             delegate:(id<AFOAuth2LoginViewControllerDelegate>)delegate;
+             delegate:(id<LHOAuth2LoginViewControllerDelegate>)delegate;
 
 /*
  * Load the authorization page
