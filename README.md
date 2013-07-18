@@ -1,10 +1,10 @@
 # LHOAuth2LoginViewController
 
-LHOAuth2LoginViewController lets the user do an OAuth2 authentication against a web service without without redirecting the user to Safari.app, but instead using a web view inside a modal view controller.
+LHOAuth2LoginViewController lets the user do an OAuth2 authentication against a web service without redirecting the user to Safari.app, but instead using a web view inside a modal view controller.
 
-I consider an iOS app to be a "public client", as referred in the OAuth2 standard, and that's why the class only supports [Implicit Grant](http://tools.ietf.org/html/rfc6749#section-4.2). `The implicit grant type does not include client authentication, and relies on the presence of the resource owner and the registration of the redirection URI.` 
+I consider an iOS app to be *a public client*, as referred in the OAuth2 standard, and that's why the class only supports [Implicit Grant](http://tools.ietf.org/html/rfc6749#section-4.2). *The implicit grant type does not include client authentication, and relies on the presence of the resource owner and the registration of the redirection URI.*
 
-With implicit grant we get the access token directly in the redirect url fragment. **Implicit grant does not support refresh tokens.**
+With implicit grant, we get the access token directly in the redirect url fragment. **Implicit grant does not support refresh tokens.**
 
 ## Example Usage
 
