@@ -130,6 +130,7 @@
  Handle cancel button
  */
 - (void)cancelLogin:(id)sender {
+    [self.webView stopLoading];
     [self failWithErrorCode:100 description:@"Login cancelled." recoverySuggestion:@""];
 }
 
